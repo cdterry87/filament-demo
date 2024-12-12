@@ -3,6 +3,16 @@
 namespace App\Models;
 
 use App\Enums\Region;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Get;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,5 +63,73 @@ class Conference extends Model
     public function talks(): BelongsToMany
     {
         return $this->belongsToMany(Talk::class);
+    }
+
+    public static function getForm(): array
+    {
+        return [
+            Section::make('Conference Details')
+                ->description('Provide some basic information about the conference.')
+                ->columns(2)
+                ->schema([
+                    TextInput::make('name')
+                        ->columnSpanFull()
+                        ->label('Conference Name')
+                        ->required()
+                        ->maxLength(60)
+                        ->placeholder('Enter the name of the conference')
+                        ->helperText('The name of the conference.')
+                        ->columnSpanFull(),
+                    RichEditor::make('description')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull(),
+                    DateTimePicker::make('start_date')
+                        ->required(),
+                    DateTimePicker::make('end_date')
+                        ->required(),
+                    Fieldset::make('Status')
+                        ->schema([
+                            Select::make('status')
+                                ->required()
+                                ->options([
+                                    'draft' => 'Draft',
+                                    'published' => 'Published',
+                                    'archived' => 'Archived',
+                                ]),
+                            Toggle::make('is_published')
+                                ->default(false),
+                        ])
+            ]),
+            Section::make('Location')
+                ->description('Specify a region and venue for the conference.')
+                ->columns(2)
+                ->schema([
+                    Select::make('region')
+                        ->live()
+                        ->required()
+                        ->enum(Region::class)
+                        ->options(Region::class),
+                    Select::make('venue_id')
+                        ->searchable()
+                        ->preload() // use for moderate amount of data; don't use for large amounts of data
+                        ->createOptionForm(Venue::getForm())
+                        ->editOptionForm(Venue::getForm())
+                        ->relationship('venue', 'name', modifyQueryUsing: function (Builder $query, Get $get) {
+                            return $query->where('region', $get('region'));
+                        }),
+
+                ]),
+            Section::make('Select Conference Speakers')
+                ->description('Select the primary speakers for the conference.')
+                ->schema([
+                    CheckboxList::make('speakers')
+                        ->hiddenLabel()
+                        ->relationship('speakers', 'name')
+                        ->options(Speaker::all()->pluck('name', 'id')->toArray())
+                        ->columns(3)
+                        ->columnSpanFull(),
+                    ]),
+        ];
     }
 }

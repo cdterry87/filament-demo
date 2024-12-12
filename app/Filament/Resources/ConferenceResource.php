@@ -25,50 +25,7 @@ class ConferenceResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Conference Name')
-                    ->required()
-                    ->maxLength(60)
-                    ->placeholder('Enter the name of the conference')
-                    ->helperText('The name of the conference.')
-                    ->columnSpanFull(),
-                Forms\Components\RichEditor::make('description')
-                    ->required()
-                    ->maxLength(255)
-                    ->columnSpanFull(),
-                Forms\Components\DatePicker::make('start_date')
-                    ->required(),
-                Forms\Components\DatePicker::make('end_date')
-                    ->required(),
-                Forms\Components\Toggle::make('is_published')
-                    ->default(false),
-                Forms\Components\Select::make('status')
-                    ->required()
-                    ->options([
-                        'draft' => 'Draft',
-                        'published' => 'Published',
-                        'archived' => 'Archived',
-                    ]),
-                Forms\Components\Select::make('region')
-                    ->live()
-                    ->required()
-                    ->enum(Region::class)
-                    ->options(Region::class),
-                Forms\Components\Select::make('venue_id')
-                    ->searchable()
-                    ->preload() // use for moderate amount of data; don't use for large amounts of data
-                    ->createOptionForm(Venue::getForm())
-                    ->editOptionForm(Venue::getForm())
-                    ->relationship('venue', 'name', modifyQueryUsing: function (Builder $query, Forms\Get $get) {
-                        return $query->where('region', $get('region'));
-                    }),
-                Forms\Components\CheckboxList::make('speakers')
-                    ->relationship('speakers', 'name')
-                    ->options(Speaker::all()->pluck('name', 'id')->toArray())
-                    ->columns(3)
-                    ->columnSpanFull(),
-            ]);
+            ->schema(Conference::getForm());
     }
 
     public static function table(Table $table): Table
