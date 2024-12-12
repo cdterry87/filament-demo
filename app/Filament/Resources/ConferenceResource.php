@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Region;
 use App\Filament\Resources\ConferenceResource\Pages;
 use App\Filament\Resources\ConferenceResource\RelationManagers;
 use App\Models\Conference;
+use App\Models\Speaker;
+use App\Models\Venue;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -28,10 +31,12 @@ class ConferenceResource extends Resource
                     ->required()
                     ->maxLength(60)
                     ->placeholder('Enter the name of the conference')
-                    ->helperText('The name of the conference.'),
+                    ->helperText('The name of the conference.')
+                    ->columnSpanFull(),
                 Forms\Components\RichEditor::make('description')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->columnSpanFull(),
                 Forms\Components\DatePicker::make('start_date')
                     ->required(),
                 Forms\Components\DatePicker::make('end_date')
@@ -45,11 +50,24 @@ class ConferenceResource extends Resource
                         'published' => 'Published',
                         'archived' => 'Archived',
                     ]),
-                Forms\Components\TextInput::make('region')
+                Forms\Components\Select::make('region')
+                    ->live()
                     ->required()
-                    ->maxLength(255),
+                    ->enum(Region::class)
+                    ->options(Region::class),
                 Forms\Components\Select::make('venue_id')
-                    ->relationship('venue', 'name'),
+                    ->searchable()
+                    ->preload() // use for moderate amount of data; don't use for large amounts of data
+                    ->createOptionForm(Venue::getForm())
+                    ->editOptionForm(Venue::getForm())
+                    ->relationship('venue', 'name', modifyQueryUsing: function (Builder $query, Forms\Get $get) {
+                        return $query->where('region', $get('region'));
+                    }),
+                Forms\Components\CheckboxList::make('speakers')
+                    ->relationship('speakers', 'name')
+                    ->options(Speaker::all()->pluck('name', 'id')->toArray())
+                    ->columns(3)
+                    ->columnSpanFull(),
             ]);
     }
 

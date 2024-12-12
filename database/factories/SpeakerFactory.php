@@ -24,7 +24,8 @@ class SpeakerFactory extends Factory
             'name' => $this->faker->name(),
             'email' => $this->faker->safeEmail(),
             'bio' => $this->faker->text(),
-            'twitter_handle' => $this->faker->word(),
+            'qualifications' => [],
+            'website' => $this->faker->url(),
         ];
     }
 }
