@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Region;
+use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Fieldset;
@@ -50,21 +51,6 @@ class Conference extends Model
         'region' => Region::class
     ];
 
-    public function venue(): BelongsTo
-    {
-        return $this->belongsTo(Venue::class);
-    }
-
-    public function speakers(): BelongsToMany
-    {
-        return $this->belongsToMany(Speaker::class);
-    }
-
-    public function talks(): BelongsToMany
-    {
-        return $this->belongsToMany(Talk::class);
-    }
-
     public static function getForm(): array
     {
         return [
@@ -100,7 +86,7 @@ class Conference extends Model
                             Toggle::make('is_published')
                                 ->default(false),
                         ])
-            ]),
+                ]),
             Section::make('Location')
                 ->description('Specify a region and venue for the conference.')
                 ->columns(2)
@@ -129,7 +115,37 @@ class Conference extends Model
                         ->options(Speaker::all()->pluck('name', 'id')->toArray())
                         ->columns(3)
                         ->columnSpanFull(),
-                    ]),
+                ]),
+            Actions::make([
+                Actions\Action::make('star')
+                    ->visible(function ($operation) {
+                        if ($operation === 'create' && app()->environment('local')) {
+                            return true;
+                        }
+                        return false;
+                    })
+                    ->label('Fill with Factory Data')
+                    ->icon('heroicon-o-star')
+                    ->action(function ($livewire) {
+                        $data = Conference::factory()->make()->toArray();
+                        $livewire->form->fill($data);
+                    })
+            ])
         ];
+    }
+
+    public function venue(): BelongsTo
+    {
+        return $this->belongsTo(Venue::class);
+    }
+
+    public function speakers(): BelongsToMany
+    {
+        return $this->belongsToMany(Speaker::class);
+    }
+
+    public function talks(): BelongsToMany
+    {
+        return $this->belongsToMany(Talk::class);
     }
 }
