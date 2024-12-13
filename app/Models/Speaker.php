@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Group;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -80,25 +80,23 @@ class Speaker extends Model
     public static function getForm(): array
     {
         return [
-            Group::make([
-                    TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
-                    TextInput::make('email')
-                        ->email()
-                        ->required()
-                        ->maxLength(255),
-                    TextInput::make('website')
-                        ->url()
-                        ->prefixIcon('heroicon-o-globe-alt')
-                        ->required()
-                        ->maxLength(255),
-                ]
-            )
-                ->columns(3)
-                ->columnSpanFull(),
-            RichEditor::make('bio')
+            TextInput::make('name')
                 ->required()
+                ->maxLength(255),
+            FileUpload::make('avatar')
+                ->avatar()
+                ->imageEditor()
+                ->directory('avatars')
+                ->maxSize(1024 * 8),
+            TextInput::make('email')
+                ->email()
+                ->required()
+                ->maxLength(255),
+            TextInput::make('website')
+                ->url()
+                ->prefixIcon('heroicon-o-globe-alt')
+                ->maxLength(255),
+            RichEditor::make('bio')
                 ->columnSpanFull(),
             CheckboxList::make('qualifications')
                 ->columns(3)
