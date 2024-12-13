@@ -126,4 +126,8 @@ class Speaker extends Model
         return $this->hasMany(Talk::class);
     }
 
+    public function getDefaultAvatar(): string
+    {
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=fff&background=0D8ABC';
+    }
 }

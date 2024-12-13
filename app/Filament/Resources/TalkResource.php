@@ -59,9 +59,7 @@ class TalkResource extends Resource
                 Tables\Columns\ImageColumn::make('speaker.avatar')
                     ->label('Image')
                     ->defaultImageUrl(function (Talk $record) {
-                        return 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name='.urlencode(
-                                $record->speaker->name
-                            );
+                        return $record->speaker->getDefaultAvatar();
                     })
                     ->circular(),
                 Tables\Columns\TextColumn::make('speaker.name')
@@ -173,7 +171,6 @@ class TalkResource extends Resource
                 Tables\Actions\Action::make('export')
                     ->tooltip('Exports records visible in the table. Adjust filters to export a subset of records.')
                     ->label('Export')
-                    ->icon('heroicon-o-download')
                     ->color('primary')
                     ->action(function ($livewire) {
                         // Export records
