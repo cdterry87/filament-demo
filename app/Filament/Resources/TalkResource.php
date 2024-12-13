@@ -3,15 +3,18 @@
 namespace App\Filament\Resources;
 
 use App\Enums\TalkLength;
+use App\Enums\TalkStatus;
 use App\Filament\Resources\TalkResource\Pages;
 use App\Filament\Resources\TalkResource\RelationManagers;
 use App\Models\Talk;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
 class TalkResource extends Resource
@@ -104,12 +107,77 @@ class TalkResource extends Resource
                     })
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->slideOver()
+                        ->color('primary'),
+                    Tables\Actions\Action::make('approve')
+                        ->visible(function (Talk $talk) {
+                            return $talk->status !== TalkStatus::APPROVED;
+                        })
+                        ->label('Approve')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(function (Talk $talk) {
+                            $talk->approve();
+                        })->after(function ($action) {
+                            Notification::make()
+                                ->success()
+                                ->duration(2000)
+                                ->title('Talk approved successfully!')
+                                ->body('Speaker was notified and talk was added to conference schedule.')
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('reject')
+                        ->visible(function (Talk $talk) {
+                            return $talk->status !== TalkStatus::REJECTED;
+                        })
+                        ->label('Reject')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(function (Talk $talk) {
+                            $talk->reject();
+                        })->after(function ($action) {
+                            Notification::make()
+                                ->danger()
+                                ->duration(2000)
+                                ->title('Talk rejected successfully!')
+                                ->body('Speaker was notified and talk was not added to conference schedule.')
+                                ->send();
+                        }),
+                ])
+                    ->icon('heroicon-o-ellipsis-vertical')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('approve')
+                        ->label('Approve')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(function (Collection $collection) {
+                            $collection->each->approve();
+                        }),
+                    Tables\Actions\BulkAction::make('reject')
+                        ->label('Reject')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->action(function (Collection $collection) {
+                            $collection->each->reject();
+                        }),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->tooltip('Exports records visible in the table. Adjust filters to export a subset of records.')
+                    ->label('Export')
+                    ->icon('heroicon-o-download')
+                    ->color('primary')
+                    ->action(function ($livewire) {
+                        // Export records
+                    })
             ]);
     }
 
@@ -125,7 +193,7 @@ class TalkResource extends Resource
         return [
             'index' => Pages\ListTalks::route('/'),
             'create' => Pages\CreateTalk::route('/create'),
-            'edit' => Pages\EditTalk::route('/{record}/edit'),
+//            'edit' => Pages\EditTalk::route('/{record}/edit'),
         ];
     }
 }
