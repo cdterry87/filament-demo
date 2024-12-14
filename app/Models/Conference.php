@@ -134,6 +134,11 @@ class Conference extends Model
         ];
     }
 
+    public function attendees(): BelongsToMany
+    {
+        return $this->belongsToMany(Attendee::class);
+    }
+
     public function venue(): BelongsTo
     {
         return $this->belongsTo(Venue::class);
