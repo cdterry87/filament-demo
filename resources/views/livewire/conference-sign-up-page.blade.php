@@ -1,3 +1,6 @@
 <div class="min-h-screen w-full h-full flex items-center justify-center">
-    Test
+    {{ $this->signUpAction }}
+
+    <x-filament-actions::modals/>
+    @livewire('notifications')
 </div>
