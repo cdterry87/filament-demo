@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\TextInput;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attendee extends Model
 {
+    use HasFactory;
+
     protected $guarded = [];
 
     public static function getForm(): array
