@@ -20,7 +20,7 @@ class SpeakerFactory extends Factory
      */
     public function definition(): array
     {
-        $qualificationsCount = $this->faker->numberBetween(1, 10);
+        $qualificationsCount = $this->faker->numberBetween(1, 9);
         $qualifications = $this->faker->randomElements(array_keys(Speaker::QUALIFICATIONS), $qualificationsCount);
 
         return [

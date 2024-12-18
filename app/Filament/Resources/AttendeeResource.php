@@ -12,12 +12,20 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class AttendeeResource extends Resource
 {
     protected static ?string $model = Attendee::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $recordTitleAttribute = 'name'; // This will be used to add a global search for attendee names
+
+    public static function getNavigationbadge(): string
+    {
+        return 'New';
+    }
 
     public static function form(Form $form): Form
     {
@@ -100,6 +108,14 @@ class AttendeeResource extends Resource
             'index' => Pages\ListAttendees::route('/'),
             'create' => Pages\CreateAttendee::route('/create'),
             'edit' => Pages\EditAttendee::route('/{record}/edit'),
+        ];
+    }
+
+    // Adding this method will show more details in the global search results
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Conference' => $record->conference->name,
         ];
     }
 }

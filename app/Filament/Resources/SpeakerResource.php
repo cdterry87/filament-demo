@@ -22,6 +22,8 @@ class SpeakerResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $recordTitleAttribute = 'name'; // This will be used to add a global search for attendee names
+
     public static function form(Form $form): Form
     {
         return $form
